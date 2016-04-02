@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=utf-8 />
+    <title>EON Maps</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        position:absolute;
+        top:0;
+        bottom:0;
+        width:100%;
+      }
+    </style>
+	<style>
+/*
+ * Unlike other icons, you can style `L.divIcon` with CSS.
+ * These styles make each marker a pink triangle.
+ */
+.css-icon {
+  width: 0;
+  height: 0;
+  border-top: 30px solid transparent;
+  border-bottom: 30px solid transparent;
+  border-left: 30px solid #ff8888;
+  }
+</style>
+
+    <script type="text/javascript" src="http://pubnub.github.io/eon/v/eon/0.0.9/eon.js"></script>
+    <link type="text/css" rel="stylesheet" href="http://pubnub.github.io/eon/v/eon/0.0.9/eon.css"/>
+	<script src='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js'></script>
+<link href='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.css' rel='stylesheet' />
+
+  </head>
+  <body>
+    <div id='map'></div>
+    <script>
+      function getNonZeroRandomNumber(){
+        var random = Math.floor(Math.random()*199) - 99;
+        if(random==0) return getNonZeroRandomNumber();
+        return random;
+      }
+    </script>
+    <script>
+	//channel name
+      var channel = 'pubnub_map1';
+	  
+	  var cssIcon = L.divIcon({
+		className: 'css-icon',
+		iconSize: [60, 60]
+	});	  
+	 /*var myIcon = L.icon({
+	iconUrl: 'my-icon.png',
+	iconRetinaUrl: 'http://icons.iconarchive.com/icons/chrisbanks2/cold-fusion-hd/128/navigation-icon.png',
+	iconSize: [38, 95],
+	iconAnchor: [22, 94],
+	popupAnchor: [-3, -76],
+	shadowUrl: 'my-icon-shadow.png',
+	shadowRetinaUrl: 'my-icon-shadow@2x.png',
+	shadowSize: [68, 95],
+	shadowAnchor: [22, 94]
+});
+*/
+var myIcon = L.icon({
+	iconUrl: 'http://icons.iconarchive.com/icons/chrisbanks2/cold-fusion-hd/128/navigation-icon.png',
+	iconSize: [24, 24],
+	iconAnchor: [22, 24]
+	
+	
+});
+	
+	   var pubnub = PUBNUB.init({
+        publish_key: 'pub-c-99a67f10-32c0-45b2-ab4e-bdc901359dfe',
+        subscribe_key: 'sub-c-68dce294-f732-11e5-b552-02ee2ddab7fe'
+      });
+    
+     var map = eon.map({
+        id: 'map',
+		subscribe_key: 'sub-c-68dce294-f732-11e5-b552-02ee2ddab7fe',
+        mb_token: 'pk.eyJ1IjoibW9oaXRrdW1hciIsImEiOiJjaW1mdnV0YTIwMXVidmNtNnJhbjg2ejJjIn0.MaaRYnRZaXq6FHhdVgtW0Q',
+        mb_id: 'mohitkumar.pi795ncc',
+        channel: channel,
+        pubnub: pubnub,
+		message: function (data) {
+			  
+		},
+		rotate: true,
+		history: false,
+		marker: function (latlng, data) {
+			var marker1 =L.marker(latlng, {icon: myIcon});
+		    return marker1;
+		}
+      });
+	  
+	var polyline = L.polyline([]).addTo(map);
+	var pointsAdded = 0;
+	
+
+      function connect() {
+        var point = {
+          latlng: [37.370375, -97.756138]
+        };
+        setInterval(function(){
+          var new_point = JSON.parse(JSON.stringify(point));
+          new_point.latlng = [
+            new_point.latlng[0] + (getNonZeroRandomNumber() * 0.1),
+            new_point.latlng[1] + (getNonZeroRandomNumber() * 0.2)
+          ];
+         /* pubnub.publish({
+            channel: channel,
+            message: [new_point]
+          });*/
+        }, 500);
+      };
+	  
+	  
+	  
+	  function add(point1) {
+
+    // `addLatLng` takes a new latLng coordinate and puts it at the end of the
+    // line. You optionally pull points from your data or generate them. Here
+    // we make a sine wave with some math.
+    /*polyline.addLatLng(
+        L.latLng(
+            Math.cos(pointsAdded / 20) * 30,
+            pointsAdded));
+			*/
+			//var latlng = L.latLng(point1,point2);
+			try
+			{
+			polyline.addLatLng(point1);
+
+    // Pan the map along with where the line is being added.
+    map.setView([0, pointsAdded], 3);
+
+    // Continue to draw and pan the map by calling `add()`
+    // until `pointsAdded` reaches 360.
+    if (++pointsAdded < 360) window.setTimeout(add, 100);
+	}
+	catch(error)
+	{
+	console.info(error);
+	}
+}
+    </script>
+  </body>
+</html>
+</html>
+</html>
+</html>
